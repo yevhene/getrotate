@@ -1,0 +1,18 @@
+<html>
+  <head>
+    <link href="../css/getrotate.css" media="all" rel="stylesheet" />
+    <script src="../js/getrotate.js"></script>
+    <script src="model/model.js"></script>
+  </head>
+  <body>
+    <div class="player" id="player"></div>
+
+    <script type="text/javascript">
+      new GetRotate.Player({
+        element_id: 'player',
+        model: model,
+        reversed_order: false
+      });
+    </script>
+  </body>
+</html>
