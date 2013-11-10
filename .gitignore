@@ -1,0 +1,9 @@
+# TextEdit
+*~
+
+# Mac
+.DS_Store
+
+# Vim
+*.swp
+*.swo
