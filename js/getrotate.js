@@ -148,10 +148,11 @@ GetRotate.Player = GetRotate.Player || function(options) {
   // Defaults
   var settings = GetRotate.Utils.fill({
     speed: 600, // Number of pixels in single full turnover
-    max_inertia_velocity: 1.5, // px/ms
-    inertia_velocity_threshold: 0.1, // px/ms
-    inertia_time: 1500, // ms
-    reversed_order: false
+    maxInertiaVelocity: 1.5, // px/ms
+    inertiaVelocityThreshold: 0.1, // px/ms
+    inertiaTime: 1500, // ms
+    reversedOrder: false,
+    onReady: function() { /* EMPTY */ }
   }, options);
 
   // Var
@@ -229,6 +230,7 @@ GetRotate.Player = GetRotate.Player || function(options) {
 
     this.build = function() {
       _blockEvents();
+      var length = _currentPhotos.length;
       GetRotate.Utils.asyncLoop(function iteration(loop) {
         if (loop.index() >= _currentPhotos.length || cancelLoading) {
           loop.stop();
@@ -247,12 +249,12 @@ GetRotate.Player = GetRotate.Player || function(options) {
             }, 10);
           };
         }
-        img.setAttribute('src', _currentPhotos[loop.index()]);
-        if (settings.reversed_order) {
-          _product.insertBefore(img, _product.firstChild);
+        if (settings.reversedOrder) {
+          img.setAttribute('src', _currentPhotos[length - 1 - loop.index()]);
         } else {
-          _product.appendChild(img);
+          img.setAttribute('src', _currentPhotos[loop.index()]);
         }
+        _product.appendChild(img);
         if (_model[_mode].isLoaded) {
           updateProgressBar(loop.index() + 1, _currentPhotos.length);
           loop.next();
@@ -268,6 +270,8 @@ GetRotate.Player = GetRotate.Player || function(options) {
           _unblockEvents();
         }
         hideProgressBar();
+
+        settings.onReady();
       });
     };
 
@@ -342,20 +346,20 @@ GetRotate.Player = GetRotate.Player || function(options) {
         var time = new Date().getTime() - currentDirectionDragStartTime;
         var distance = Math.abs(currentScreenX - currentDirectionDragStartScreenX);
         var velocity = distance / time;
-        if (velocity > settings.max_inertia_velocity) {
-          velocity = settings.max_inertia_velocity;
+        if (velocity > settings.maxInertiaVelocity) {
+          velocity = settings.maxInertiaVelocity;
         }
         return velocity;
       };
       var startVelocity = calulateStartVelocity();
-      if (startVelocity < settings.inertia_velocity_threshold) {
+      if (startVelocity < settings.inertiaVelocityThreshold) {
         return;
       }
       var screenX = currentScreenX;
       var startTime = new Date().getTime();
       var currentTime = 0;
       var calculateCurrentVelocity = function(currentTime) {
-        return startVelocity * ((settings.inertia_time - currentTime) / settings.inertia_time);
+        return startVelocity * ((settings.inertiaTime - currentTime) / settings.inertiaTime);
       };
 
       var that = this;
@@ -370,7 +374,7 @@ GetRotate.Player = GetRotate.Player || function(options) {
         currentTime = new Date().getTime() - startTime;
         var dTime = currentTime - oldTime;
         var currentVelocity = calculateCurrentVelocity(currentTime);
-        if (currentVelocity < settings.inertia_velocity_threshold) {
+        if (currentVelocity < settings.inertiaVelocityThreshold) {
           isInertiaRotating = false;
           clearInterval(timer);
           return;
@@ -586,13 +590,13 @@ GetRotate.Player = GetRotate.Player || function(options) {
   };
 
   (function start() {
-    if (!settings.element_id) {
+    if (!settings.element) {
       if (console) {
         console.error('GetRotate.Player: No root element.');
       }
       return;
     }
-    _root = document.getElementById(settings.element_id);
+    _root = settings.element;
 
     if (!settings.model) {
       if (console) {
@@ -611,4 +615,3 @@ GetRotate.Player = GetRotate.Player || function(options) {
     _fixProductSize();
   };
 };
-
